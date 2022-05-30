@@ -1,4 +1,5 @@
 const express = require('express');
+require('express-async-errors');
 const morgan = require('morgan');
 const AppError = require('./utils/appError');
 const globalErrorHandler = require('./controllers/errorController');
