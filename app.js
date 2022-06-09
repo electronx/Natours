@@ -4,6 +4,7 @@ const helmet = require('helmet');
 const mongoSanitize = require('express-mongo-sanitize');
 const xss = require('xss-clean');
 const hpp = require('hpp');
+const cookieParser = require('cookie-parser');
 
 require('express-async-errors');
 const morgan = require('morgan');
@@ -43,6 +44,7 @@ const limiter = rateLimit({
 app.use('/api', limiter);
 
 // Body parser, reading data from body into req.body
+app.use(cookieParser());
 app.use(express.json({ limit: '10kb' }));
 
 // Data sanitization against NoSQL query injection
@@ -64,6 +66,11 @@ app.use(
     ],
   })
 );
+
+// Display cookies
+app.use((req, res, next) => {
+  next();
+});
 
 //--------------------------------------------------------
 //Routes

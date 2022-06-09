@@ -66,6 +66,14 @@ exports.login = async (req, res, next) => {
   createSendToken(user, 200, res);
 };
 
+exports.logout = (req, res) => {
+  res.cookie('jwt', 'loggedout', {
+    expires: new Date(Date.now() + 10 * 1000),
+    httpOnly: true,
+  });
+  res.status(200).json({ status: 'success' });
+};
+
 exports.protect = async (req, res, next) => {
   // 1) getting token and check if it is there
   let token;
@@ -74,6 +82,8 @@ exports.protect = async (req, res, next) => {
     req.headers.authorization.startsWith('Bearer')
   ) {
     token = req.headers.authorization.split(' ')[1];
+  } else if (req.cookies.jwt) {
+    token = req.cookies.jwt;
   }
 
   if (!token && !(process.env.NODE_ENV === 'production'))
@@ -97,6 +107,36 @@ exports.protect = async (req, res, next) => {
   next();
 };
 
+// Only for render pages, there will be no errors!
+exports.isLoggedIn = async (req, res, next) => {
+  // 1) getting token and check if it is there
+
+  if (req.cookies.jwt) {
+    try {
+      const token = req.cookies.jwt;
+
+      // // 2) validate token
+      const decoded = await promisify(jwt.verify)(
+        token,
+        process.env.JWT_SECRET
+      );
+
+      // 3) check if user still exists
+      const currentUser = await User.findById(decoded.id);
+      if (!currentUser) return next();
+
+      // 4) check if user changed password after the token was issued
+      if (currentUser.changedPasswordAfter(decoded.iat)) return next();
+
+      // There is a logged in user
+      res.locals.user = currentUser;
+      return next();
+    } catch (err) {
+      console.log('hello');
+    }
+  }
+  next();
+};
 exports.restrictTo = (...roles) => {
   return (req, res, next) => {
     // roles ['admin', 'lead-guide']
@@ -136,7 +176,6 @@ exports.forgotPassword = async (req, res, next) => {
       message: 'Token sent to email',
     });
   } catch (err) {
-    console.log(err);
     user.PasswordResetToken = undefined;
     user.passwordResetExpires = undefined;
     await user.save({ validateBeforeSave: false });
@@ -179,7 +218,6 @@ exports.updatePassword = async (req, res, next) => {
   const { password, newPassword } = await req.body;
 
   const user = await User.findById(req.user.id).select('+password');
-  console.log(user);
   // 2) check if POSTed password is correct
   if (!user || !(await user.correctPassword(password, user.password))) {
     return next(new AppError('Old password is not correct', 401));
