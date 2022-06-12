@@ -4,7 +4,7 @@ const { promisify } = require('util');
 const jwt = require('jsonwebtoken');
 const User = require('../models/userModel');
 const AppError = require('../utils/appError');
-const sendEmail = require('../utils/email');
+const Email = require('../utils/email');
 // const { User } = require('../routes/userRoutes');
 
 const signToken = (id) => {
@@ -39,6 +39,10 @@ const createSendToken = (user, statusCode, res) => {
 
 exports.signup = async (req, res, next) => {
   const newUser = await User.create(req.body);
+  //create URL variable according to the enviorenemnt
+  const url = `${req.protocol}://${req.get('host')}/me`;
+
+  await new Email(newUser, url).sendWeclome();
   //   {
   //   name: req.body.name,
   //   email: req.body.email,
@@ -51,7 +55,6 @@ exports.signup = async (req, res, next) => {
 
 exports.login = async (req, res, next) => {
   const { email, password } = req.body;
-
   // 1) check if email and password exist
   if (!email || !password) {
     return next(new AppError('please provide email and password!', 400));
@@ -104,6 +107,7 @@ exports.protect = async (req, res, next) => {
 
   // GRANT ACESS TO PROTECTED ROUTE
   req.user = currentUser;
+  res.locals.user = currentUser;
   next();
 };
 
@@ -131,9 +135,7 @@ exports.isLoggedIn = async (req, res, next) => {
       // There is a logged in user
       res.locals.user = currentUser;
       return next();
-    } catch (err) {
-      console.log('hello');
-    }
+    } catch (err) {}
   }
   next();
 };
@@ -159,17 +161,13 @@ exports.forgotPassword = async (req, res, next) => {
   const resetToken = user.createPasswordResetToken();
   await user.save({ validateBeforeSave: false });
   // 3) send it to user's email
-  const resetURL = `${req.protocol}://${req.get(
-    'host'
-  )}/api/v1/users/resetPassword/${resetToken}`;
 
-  const message = `Forgot your password? Submit a PATCH request with your new password and passwordConfirm to: ${resetURL}.\nif you didn't forget your password, please ignore this email.`;
   try {
-    await sendEmail({
-      email: req.body.email,
-      subject: 'Your password reset token (valid for 10 min)',
-      message,
-    });
+    const resetURL = `${req.protocol}://${req.get(
+      'host'
+    )}/api/v1/users/resetPassword/${resetToken}`;
+
+    await new Email(user, resetURL).sendPasswordReset();
 
     res.status(200).json({
       status: 'success',
@@ -181,7 +179,7 @@ exports.forgotPassword = async (req, res, next) => {
     await user.save({ validateBeforeSave: false });
 
     return next(
-      new AppError('There was an error sendin the email, Try again later')
+      new AppError('There was an error sending the email, Try again later')
     );
   }
 };
@@ -215,12 +213,18 @@ exports.resetPassword = async (req, res, next) => {
 
 exports.updatePassword = async (req, res, next) => {
   // 1) Get usr from the collection
-  const { password, newPassword } = await req.body;
+  const { password, newPassword, passwordConfirm } = await req.body;
 
   const user = await User.findById(req.user.id).select('+password');
   // 2) check if POSTed password is correct
   if (!user || !(await user.correctPassword(password, user.password))) {
     return next(new AppError('Old password is not correct', 401));
+  }
+
+  if (passwordConfirm !== newPassword) {
+    return next(
+      new AppError('Confirmed password does not match the new password', 401)
+    );
   }
 
   if (password === newPassword)

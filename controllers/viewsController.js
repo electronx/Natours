@@ -1,6 +1,6 @@
 const Tour = require('../models/tourModel');
 const AppError = require('../utils/appError');
-const appError = require('../utils/appError');
+const Booking = require('../models/bookingModel');
 
 exports.getOverview = async (req, res, next) => {
   // 1) Get tour data from collection
@@ -39,4 +39,26 @@ exports.getLogin = (req, res) => {
   res.status(200).render('login', {
     title: 'Log into your account',
   });
+};
+
+exports.getAccount = (req, res) => {
+  res.status(200).render('account', {
+    title: 'Profile page',
+  });
+};
+
+exports.getMyTours = async (req, res, next) => {
+  // 1) Find all bookings
+  const bookings = await Booking.find({ user: req.user.id });
+
+  // 2) Find tours with the returned IDs
+  const tourIDs = bookings.map((el) => el.tour);
+  const tours = await Tour.find({ _id: { $in: tourIDs } });
+
+  res.status(200).render('overview', {
+    title: 'MyTours',
+    tours,
+  });
+
+  // 2 Find tours with returned IDs
 };

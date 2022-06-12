@@ -1,6 +1,57 @@
+const multer = require('multer');
+const sharp = require('sharp');
 const User = require('../models/userModel');
 const AppError = require('../utils/appError');
 const factory = require('./handlerFactory');
+
+// IMAGE UPLOAD USING MULTER PACKAGE
+
+// TO DEFINE THE STORAGE (hard disk) PATH AND FILENAME
+// const multerStorage = multer.diskStorage({
+//   destination: (req, file, cb) => {
+//     cb(null, 'starter/public/img/users');
+//   },
+//   filename: (req, file, cb) => {
+//     //user-342934234923840- time stamp. jgep
+//     const ext = file.mimetype.split('/')[1];
+//     cb(null, `user-${req.user.id}-${Date.now()}.${ext}`);
+//   },
+// });
+
+// SAVE FILE AS IN A SHORT TERM BUFFER MEMORY
+const multerStorage = multer.memoryStorage();
+
+// FILTER TO ONLY ALLOW IMAGES
+const multerFilter = (req, file, cb) => {
+  if (file.mimetype.startsWith('image')) {
+    cb(null, true);
+  } else
+    cb(new AppError('Not an image! Please upload only images.', 400), false);
+};
+
+// CREATE VARIABLE THAT HOLDS INFO ABOUT STORAGE PATH AND FILTER
+const upload = multer({
+  storage: multerStorage,
+  fileFilter: multerFilter,
+});
+
+// EXPORT FUNCTION WHICH UPLOADS SINGLE PHOTO
+exports.uploadUserPhoto = upload.single('photo');
+
+// RESIZE PICTURE SIZE
+exports.resizeUserPhoto = async (req, res, next) => {
+  if (!req.file) return next();
+
+  req.file.filename = `user-${req.user.id}-${Date.now()}.jpeg`;
+
+  await sharp(req.file.buffer)
+    .resize(500, 500)
+    .toFormat('jpeg')
+    .jpeg({ quality: 90 })
+    .toFile(`starter/public/img/users/${req.file.filename}`);
+
+  next();
+};
 
 exports.getMe = (req, res, next) => {
   req.params.id = req.user.id;
@@ -39,6 +90,7 @@ exports.updateMe = async (req, res, next) => {
   }
   // 2) Filter out unwanted fields
   const filteredBody = filterObj(req.body, 'name', 'email');
+  if (req.file) filteredBody.photo = req.file.filename;
   // 3) update user document
   const updatedUser = await User.findByIdAndUpdate(req.user.id, filteredBody, {
     new: true,

@@ -9,7 +9,7 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: [true, 'Name must be provided'],
       minLength: 3,
-      maxLength: 15,
+      maxLength: 50,
     },
     email: {
       type: String,
@@ -20,6 +20,7 @@ const userSchema = new mongoose.Schema(
     },
     photo: {
       type: String,
+      default: 'default.jpg',
     },
     role: {
       type: String,
@@ -64,17 +65,18 @@ userSchema.pre(/^find/, function (next) {
   this.find({ active: { $ne: false } });
   next();
 });
-// Password Incryption
-// userSchema.pre('save', async function (next) {
-//   //Only run this function if password was actually modified
-//   if (!this.isModified('password')) return next();
-//   // Hash the passwrod with cost of 12
-//   this.password = await bcrypt.hash(this.password, 12);
-//   // delete password Confirm field
-//   this.passwordConfirm = undefined;
 
-//   next();
-// });
+// Password Incryption
+userSchema.pre('save', async function (next) {
+  //Only run this function if password was actually modified
+  if (!this.isModified('password')) return next();
+  // Hash the passwrod with cost of 12
+  this.password = await bcrypt.hash(this.password, 12);
+  // delete password Confirm field
+  this.passwordConfirm = undefined;
+
+  next();
+});
 
 // Comparing passwords
 userSchema.methods.correctPassword = async function (
