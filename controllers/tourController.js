@@ -40,7 +40,6 @@ exports.uploadTourImages = upload.fields([
 // upload.fields() - for uploading multipels with mixed names - produces req.files
 
 exports.resizeTourImages = async (req, res, next) => {
-  console.log(req.files);
   if (!req.files.imageCover || !req.files.images) return next();
 
   // 1) Cover Image
@@ -66,7 +65,6 @@ exports.resizeTourImages = async (req, res, next) => {
       req.body.images.push(filename);
     })
   );
-  console.log(req.body);
   next();
 };
 

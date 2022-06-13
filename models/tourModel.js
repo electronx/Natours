@@ -168,10 +168,10 @@ tourSchema.pre(/^find/, function (next) {
   next();
 });
 
-tourSchema.post(/^find/, function (docs, next) {
-  console.log(`Query took ${Date.now() - this.start} millisecdons`);
-  next();
-});
+// tourSchema.post(/^find/, function (docs, next) {
+//   console.log(`Query took ${Date.now() - this.start} millisecdons`);
+//   next();
+// });
 
 //this MIDDLEWARE messes with geoNear aggregation pipeline
 // AGGREGATION MIDDLEWARE
