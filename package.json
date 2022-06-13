@@ -5,10 +5,10 @@
   "main": "index.js",
   "scripts": {
     "start:dev": "nodemon server.js",
-    "start:prod": "set NODE_ENV=production&& nodemon server.js",
+    "start": "node server.js",
     "debug": "ndb server.js",
-    "watch:js": "parcel watch --no-hmr ./public/js/index.js --out-dir ./public/js --out-file bundle.js --public-url ./",
-    "build:js": "parcel build --no-hmr ./public/js/index.js --out-dir ./public/js --out-file bundle.js --public-url ./"
+    "watch:js": "parcel watch ./public/js/index.js --out-dir ./public/js --out-file bundle.js --public-url ./",
+    "build:js": "parcel build ./public/js/index.js --out-dir ./public/js --out-file bundle.js --public-url ./"
   },
   "author": "escapist",
   "license": "ISC",
