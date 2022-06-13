@@ -9,7 +9,7 @@ const factory = require('./handlerFactory');
 // TO DEFINE THE STORAGE (hard disk) PATH AND FILENAME
 // const multerStorage = multer.diskStorage({
 //   destination: (req, file, cb) => {
-//     cb(null, 'starter/public/img/users');
+//     cb(null, 'public/img/users');
 //   },
 //   filename: (req, file, cb) => {
 //     //user-342934234923840- time stamp. jgep
@@ -48,7 +48,7 @@ exports.resizeUserPhoto = async (req, res, next) => {
     .resize(500, 500)
     .toFormat('jpeg')
     .jpeg({ quality: 90 })
-    .toFile(`starter/public/img/users/${req.file.filename}`);
+    .toFile(`public/img/users/${req.file.filename}`);
 
   next();
 };

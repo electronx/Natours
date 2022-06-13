@@ -7,8 +7,8 @@
     "start:dev": "nodemon server.js",
     "start:prod": "set NODE_ENV=production&& nodemon server.js",
     "debug": "ndb server.js",
-    "watch:js": "parcel watch --no-hmr ./starter/public/js/index.js --out-dir ./starter/public/js --out-file bundle.js --public-url ./",
-    "build:js": "parcel build --no-hmr ./starter/public/js/index.js --out-dir ./starter/public/js --out-file bundle.js"
+    "watch:js": "parcel watch --no-hmr ./public/js/index.js --out-dir ./public/js --out-file bundle.js --public-url ./",
+    "build:js": "parcel build --no-hmr ./public/js/index.js --out-dir ./public/js --out-file bundle.js --public-url ./"
   },
   "author": "escapist",
   "license": "ISC",
