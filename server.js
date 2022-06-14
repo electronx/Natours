@@ -36,4 +36,11 @@ const main = async () => {
   console.log('DB connection successful');
 };
 
+process.on('SIGTERM', () => {
+  console.log('SIGTERM RECEIVED. Shutting down gracefully');
+  server.close(() => {
+    console.log('Process terminated!');
+  });
+});
+
 main();
