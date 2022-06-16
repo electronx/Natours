@@ -58,15 +58,14 @@ exports.updateBooking = factory.updateOne(Booking);
 const createBookingCheckout = async (session) => {
   const tour = session.client_reference_id;
   const user = (await User.findOne({ email: session.customer.email })).id;
-  const price = session.line_items[0].amount / 100;
+  const price = session.data.object.amount_total / 100;
 
   await Booking.create({ tour, user, price });
 };
 
 exports.webhookCheckout = (req, res, next) => {
   const signature = req.headers['stripe-signature'];
-  console.log(signature);
-  console.log(req.headers);
+
   let event;
   try {
     event = stripe.webhooks.constructEvent(
