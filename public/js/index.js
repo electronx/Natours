@@ -4,6 +4,7 @@ import { login } from './login';
 import { logout } from './login';
 import { displayMap } from './mapbox';
 import { bookTour } from './stripe';
+import { showAlert } from './alert';
 
 // DOM ELEMENTS
 const mapBox = document.getElementById('map');
@@ -62,3 +63,6 @@ if (loginForm) {
     login(email, password);
   });
 }
+
+const alertMessage = document.querySelector('body').dataset.alert;
+if (alert) showAlert('success', alertMessage, 20);

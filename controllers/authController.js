@@ -107,6 +107,7 @@ exports.protect = async (req, res, next) => {
 
   // GRANT ACESS TO PROTECTED ROUTE
   req.user = currentUser;
+  // Gives all templates/pugs access to currentUser
   res.locals.user = currentUser;
   next();
 };
