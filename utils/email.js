@@ -13,7 +13,7 @@ module.exports = class Email {
 
   // Create Transport (email sending service) based on enviorenement (prod, dev)
   newTransport() {
-    if (process.env.NODE_ENV === 'production') {
+    if (process.env.NODE_ENV === 'development') {
       // using Sendingblue to send real emails
       return nodemailer.createTransport({
         host: 'smtp-relay.sendinblue.com',
@@ -63,7 +63,14 @@ module.exports = class Email {
   async sendPasswordReset() {
     await this.send(
       'passwordReset',
-      'Your password reset toekn (valid for only 10 min)'
+      'Your password reset token (valid for only 10 min)'
+    );
+  }
+
+  async sendActivationLink() {
+    await this.send(
+      'accountActivation',
+      'Your account activation link (valid for only 7 days)'
     );
   }
 };

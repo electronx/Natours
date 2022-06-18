@@ -49,6 +49,18 @@ exports.getLogin = (req, res) => {
   });
 };
 
+exports.getQrcode = (req, res) => {
+  res.status(200).render('qrcode', {
+    title: 'scan the code',
+  });
+};
+
+exports.getSignup = (req, res) => {
+  res.status(200).render('signup', {
+    title: 'Please sign up',
+  });
+};
+
 exports.getAccount = (req, res) => {
   res.status(200).render('account', {
     title: 'Profile page',

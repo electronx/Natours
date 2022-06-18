@@ -1,10 +1,13 @@
 /* eslint-disable arrow-body-style */
+const speakeasy = require('speakeasy');
+const qrcode = require('qrcode');
 const crypto = require('crypto');
 const { promisify } = require('util');
 const jwt = require('jsonwebtoken');
 const User = require('../models/userModel');
 const AppError = require('../utils/appError');
 const Email = require('../utils/email');
+
 // const { User } = require('../routes/userRoutes');
 
 const signToken = (id) => {
@@ -18,7 +21,7 @@ const createSendToken = (user, statusCode, req, res) => {
 
   res.cookie('jwt', token, {
     expires: new Date(
-      Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000
+      Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 60 * 1000
     ),
     httpOnly: true,
     secure: req.secure || req.headers['x-forwarded-proto'] === 'https',
@@ -38,18 +41,61 @@ const createSendToken = (user, statusCode, req, res) => {
 
 exports.signup = async (req, res, next) => {
   const newUser = await User.create(req.body);
-  //create URL variable according to the enviorenemnt
-  const url = `${req.protocol}://${req.get('host')}/me`;
 
-  await new Email(newUser, url).sendWeclome();
-  //   {
-  //   name: req.body.name,
-  //   email: req.body.email,
-  //   password: req.body.password,
-  //   passwordConfirm: req.body.passwordConfirm,
-  //   passwordChangedAt: req.body.passwordChangedAt,
-  // }
-  createSendToken(newUser, 201, req, res);
+  // Generate random activation Token
+  const activationToken = newUser.createActivationToken();
+  newUser.active = false;
+
+  await newUser.save({ validateBeforeSave: false });
+
+  try {
+    const resetURL = `${req.protocol}://${req.get(
+      'host'
+    )}/api/v1/users/activate/${activationToken}`;
+
+    await new Email(newUser, resetURL).sendActivationLink();
+
+    res.status(200).json({
+      status: 'success',
+      message: 'Token sent to email',
+    });
+  } catch (err) {
+    return next(
+      new AppError('There was an error sending the email, Try again later')
+    );
+  }
+};
+
+exports.activate = async (req, res, next) => {
+  // 1) get user based on the token
+  const hashedToken = crypto
+    .createHash('sha256')
+    .update(req.params.token)
+    .digest('hex');
+
+  const user = await User.findOne({
+    accountActivationToken: hashedToken,
+    accountActivationExpires: { $gt: Date.now() },
+  });
+
+  // 2) if token has not expired, and there is user activate the account
+  if (!user) {
+    return next(
+      new AppError('Activation Token is invalid or has expired', 400)
+    );
+  }
+  user.active = true;
+  user.accountActivationToken = undefined;
+  user.accountActivationExpires = undefined;
+  await user.save({ validateBeforeSave: false });
+  // 3) Update changedPasswordAt property for the user
+
+  // 4) redirect user to the login page and send the welcome email
+  const loginUrl = `${req.protocol}://${req.get('host')}/login`;
+
+  await new Email(user, loginUrl).sendWeclome();
+
+  res.redirect(loginUrl);
 };
 
 exports.login = async (req, res, next) => {
@@ -65,14 +111,54 @@ exports.login = async (req, res, next) => {
   if (!user || !(await user.correctPassword(password, user.password))) {
     return next(new AppError('incorrect email or password', 401));
   }
+
+  // Generate QR COODE and save secret in User
+  const secret = speakeasy.generateSecret({
+    name: 'Natours 2 step Authenthicator',
+  });
+  user.base32 = secret.base32;
+  qrcode.toDataURL(secret.otpauth_url, async (err, data) => {
+    user.auth_url = data;
+    await user.save({ validateBeforeSave: false });
+  });
+
+  res.cookie('email', email);
+
+  res.status(200).json({
+    status: 'success',
+  });
+};
+
+exports.isReadyForQr = async (req, res, next) => {
+  if (!req.cookies.email)
+    next(new AppError('please provide email and password!', 400));
+  const user = await User.findOne({ email: req.cookies.email });
+  console.log('isready works');
+  res.locals.userForQr = user;
+  next();
+};
+
+exports.verify = async (req, res, next) => {
+  const { qrtoken } = req.body;
+  const user = await User.findOne({ email: req.cookies.email });
+  console.log(req.cookies.email, user.base32, qrtoken);
+  const verify = speakeasy.totp.verify({
+    secret: user.base32,
+    encoding: 'base32',
+    token: qrtoken,
+  });
+  console.log(verify);
+  if (!verify) next(new AppError('Verify token not right', 400));
+
   createSendToken(user, 200, req, res);
 };
 
-exports.logout = (req, res) => {
+exports.logout = (req, res, next) => {
   res.cookie('jwt', 'loggedout', {
     expires: new Date(Date.now() + 10 * 1000),
     httpOnly: true,
   });
+
   res.status(200).json({ status: 'success' });
 };
 
@@ -133,6 +219,7 @@ exports.isLoggedIn = async (req, res, next) => {
       if (currentUser.changedPasswordAfter(decoded.iat)) return next();
 
       // There is a logged in user
+
       res.locals.user = currentUser;
       return next();
     } catch (err) {}

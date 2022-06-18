@@ -2,8 +2,8 @@ extends baseEmail
 
 block content
   p Hi #{ firstName },
-  p Welcome to Natours, we're glad to have you 🎉🙏
-  p We're all a big familiy here, so make sure to upload your user photo so we get to know you a bit better!
+  p To become a Natours family member, please activate your account:
+  p
   table.btn.btn-primary(
     role='presentation',
     border='0',
@@ -22,6 +22,5 @@ block content
             tbody
               tr
                 td
-                  a(href=`${url}`, target='_blank') Please Log in
-  p If you need any help with booking your next tour, please don't hesitate to contact me!
+                  a(href=`${url}`, target='_blank') Activate your account
   p - The Escapist, CEO

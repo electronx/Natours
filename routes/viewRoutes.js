@@ -19,5 +19,7 @@ router.get(
 );
 router.get('/tour/:slug', viewsController.getTour);
 router.get('/login', viewsController.getLogin);
+router.get('/qrcode', authController.isReadyForQr, viewsController.getQrcode);
+router.get('/signup', viewsController.getSignup);
 
 module.exports = router;

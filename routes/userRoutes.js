@@ -9,6 +9,8 @@ router.post('/login', authController.login);
 router.get('/logout', authController.logout);
 router.post('/forgotPassword', authController.forgotPassword);
 router.patch('/resetPassword/:token?', authController.resetPassword);
+router.get('/activate/:token?', authController.activate, authController.logout);
+router.post('/verify', authController.verify);
 
 // protects all the routes that come after this MIDDLEWARE
 router.use(authController.protect);

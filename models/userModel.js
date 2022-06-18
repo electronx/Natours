@@ -45,13 +45,17 @@ const userSchema = new mongoose.Schema(
         message: 'passwords are not the same',
       },
     },
+    base32: String,
+    auth_url: String,
     passwordChangedAt: Date,
     passwordResetToken: String,
     passwordResetExpires: Date,
+    accountActivationToken: String,
+    accountActivationExpires: Date,
     active: {
       type: Boolean,
       default: true,
-      select: false,
+      select: true,
     },
   },
   {
@@ -60,11 +64,12 @@ const userSchema = new mongoose.Schema(
   }
 );
 
-userSchema.pre(/^find/, function (next) {
-  // this points to the current query
-  this.find({ active: { $ne: false } });
-  next();
-});
+// Filters out Inactive users
+// userSchema.pre(/^find/, function (next) {
+//   // this points to the current query
+//   this.find({ active: { $ne: false } });
+//   next();
+// });
 
 // Password Incryption
 userSchema.pre('save', async function (next) {
@@ -106,6 +111,17 @@ userSchema.methods.createPasswordResetToken = function () {
   // console.log({ resetToken }, this.passwordResetToken);
   this.passwordResetExpires = Date.now() + 10 * 60 * 1000;
   return resetToken;
+};
+
+// Account activation Token
+userSchema.methods.createActivationToken = function () {
+  const activationToken = crypto.randomBytes(32).toString('hex');
+  this.accountActivationToken = crypto
+    .createHash('sha256')
+    .update(activationToken)
+    .digest('hex');
+  this.accountActivationExpires = Date.now() + 7 * 60 * 60 * 1000;
+  return activationToken;
 };
 
 userSchema.pre('save', function (next) {

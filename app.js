@@ -20,6 +20,7 @@ const reviewRouter = require('./routes/reviewRoutes');
 const viewRouter = require('./routes/viewRoutes');
 const bookingRouter = require('./routes/bookingRoutes');
 const bookingController = require('./controllers/bookingController');
+const authController = require('./controllers/authController');
 // Starts Express app
 const app = express();
 
@@ -99,6 +100,19 @@ app.use((req, res, next) => {
 });
 
 //--------------------------------------------------------
+//Refresh Token
+app.use('*', (req, res, next) => {
+  const token = req.cookies.jwt;
+  res.cookie('jwt', token, {
+    expires: new Date(
+      Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 60 * 1000
+    ),
+    httpOnly: true,
+    secure: req.secure || req.headers['x-forwarded-proto'] === 'https',
+  });
+  next();
+});
+
 //Routes
 app.use('/', viewRouter);
 app.use('/api/v1/tours', tourRouter);
