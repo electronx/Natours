@@ -42,6 +42,13 @@ const sendErrorDev = (err, req, res) => {
 };
 
 const sendErrorProd = (err, req, res) => {
+  // FOR SPECIFIC API ERROR for When activation token has expired
+  if (req.originalUrl.startsWith('/api/v1/users/activate')) {
+    return res.status(err.statusCode).render('error', {
+      title: 'Something went wrong!',
+      msg: err.message,
+    });
+  }
   // FOR API ERROR
   if (req.originalUrl.startsWith('/api')) {
     // Operational, trusted error: send message to client
