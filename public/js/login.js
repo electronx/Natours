@@ -13,9 +13,16 @@ export const login = async (email, password) => {
         password,
       },
     });
+    console.log(res);
+    if (res.status === 205) {
+      showAlert('success', 'Login Successful, Welcome!');
+      window.setTimeout(() => {
+        location.assign('/');
+      }, 0);
+    }
 
     if (res.data.status === 'success') {
-      showAlert('success', 'Please Scan the QR code');
+      showAlert('success', 'Please Enter the QR code');
       window.setTimeout(() => {
         location.assign('/qrcode');
       }, 0);

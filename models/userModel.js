@@ -45,6 +45,7 @@ const userSchema = new mongoose.Schema(
         message: 'passwords are not the same',
       },
     },
+    tempbase32: String,
     base32: String,
     auth_url: String,
     passwordChangedAt: Date,
@@ -52,9 +53,14 @@ const userSchema = new mongoose.Schema(
     passwordResetExpires: Date,
     accountActivationToken: String,
     accountActivationExpires: Date,
+    twofa: {
+      type: Boolean,
+      default: false,
+      select: true,
+    },
     active: {
       type: Boolean,
-      default: true,
+      default: false,
       select: true,
     },
   },

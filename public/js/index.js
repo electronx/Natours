@@ -7,6 +7,8 @@ import { bookTour } from './stripe';
 import { showAlert } from './alert';
 import { signup } from './signup';
 import { qrVerify } from './qrVeritfy';
+import { qrEnable } from './qrEnable';
+import { qrEmail } from './qrEmail';
 
 // DOM ELEMENTS
 const mapBox = document.getElementById('map');
@@ -17,6 +19,8 @@ const saveSettingsForm = document.querySelector('.form-user-data');
 const updatePasswordForm = document.querySelector('.form-user-settings');
 const bookBtn = document.getElementById('book-tour');
 const qrVerifyForm = document.querySelector('.form--verify');
+const qrEnableForm = document.querySelector('.form--qrenable');
+const lostQrBtn = document.getElementById('lostqr');
 
 // DELEGATION
 if (mapBox) {
@@ -82,12 +86,26 @@ if (signupForm) {
 if (qrVerifyForm) {
   qrVerifyForm.addEventListener('submit', (e) => {
     e.preventDefault();
-    console.log('aq var');
     const qrtoken = document.getElementById('verifyqr').value;
-    console.log(qrtoken);
     qrVerify(qrtoken);
   });
 }
+
+if (qrEnableForm) {
+  qrEnableForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    let mode = document.getElementById('enabledisable').innerHTML;
+
+    const qrtoken = document.getElementById('verifyqr').value;
+    qrEnable(mode, qrtoken);
+  });
+}
+
+if (lostQrBtn)
+  lostQrBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    qrEmail();
+  });
 
 const alertMessage = document.querySelector('body').dataset.alert;
 if (alertMessage) showAlert('success', alertMessage, 20);

@@ -11,6 +11,8 @@ router.post('/forgotPassword', authController.forgotPassword);
 router.patch('/resetPassword/:token?', authController.resetPassword);
 router.get('/activate/:token?', authController.activate, authController.logout);
 router.post('/verify', authController.verify);
+router.post('/qrEnable', authController.protect, authController.qrEnable);
+router.post('/qrEmail', authController.isReadyForQr, authController.qrEmail);
 
 // protects all the routes that come after this MIDDLEWARE
 router.use(authController.protect);

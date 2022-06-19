@@ -3,8 +3,7 @@ extends base
 block content
   main.main
     .qr-form
-      img#qr-code(src=`${userForQr.auth_url}`, alt='Natours logo')
-      h2.heading-secondary.ma-bt-lg Scan the QR-code using Google Authenthicator
+      h2.heading-secondary.ma-bt-lg Enter the code from your Google Authenthicator
       form.form.form--verify
         .form__group.ma-bt-md
           label.form__label(for='verifyqr') Verify QR
@@ -16,3 +15,4 @@ block content
           )
         .form__group
         button.btn.btn--green send
+        button#lostqr.btn.btn--green Recover Qr

@@ -4,23 +4,24 @@ const htmlToText = require('html-to-text');
 
 module.exports = class Email {
   // construct an instance which takes in info about User and Url
-  constructor(user, url) {
+  constructor(user, url, img) {
     this.to = user.email;
     this.firstName = user.name.split(' ')[0];
     this.url = url;
+    this.img = img;
     this.from = 'The Escapist <thescapist92@gmail.com';
   }
 
   // Create Transport (email sending service) based on enviorenement (prod, dev)
   newTransport() {
-    if (process.env.NODE_ENV === 'development') {
-      // using Sendingblue to send real emails
+    if (process.env.NODE_ENV === 'production') {
+      // using elasticemail to send real emails
       return nodemailer.createTransport({
-        host: 'smtp-relay.sendinblue.com',
-        port: 587,
+        host: 'smtp.elasticemail.com',
+        port: 2525,
         auth: {
           user: 'thescapist92@gmail.com',
-          pass: 'msP59n2qxMJjr0dX',
+          pass: 'CB8CC659D01D12E68823A7B2E0CE7015395F',
         },
       });
     }
@@ -41,6 +42,7 @@ module.exports = class Email {
     const html = pug.renderFile(`${__dirname}/../views/email/${template}.pug`, {
       firstName: this.firstName,
       url: this.url,
+      img: this.img,
       subject,
     });
 
@@ -71,6 +73,13 @@ module.exports = class Email {
     await this.send(
       'accountActivation',
       'Your account activation link (valid for only 7 days)'
+    );
+  }
+
+  async sendQr() {
+    await this.send(
+      'qrEmail',
+      'Your QR for two factor authenthication (valid for only 5 min)'
     );
   }
 };

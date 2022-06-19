@@ -50,7 +50,7 @@ exports.getLogin = (req, res) => {
 };
 
 exports.getQrcode = (req, res) => {
-  res.status(200).render('qrcode', {
+  res.status(200).render('loginQrCode', {
     title: 'scan the code',
   });
 };
@@ -64,6 +64,12 @@ exports.getSignup = (req, res) => {
 exports.getAccount = (req, res) => {
   res.status(200).render('account', {
     title: 'Profile page',
+  });
+};
+
+exports.getTwofa = (req, res) => {
+  res.status(200).render('twofa', {
+    title: 'Two factor authenthication',
   });
 };
 
