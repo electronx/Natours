@@ -20,7 +20,7 @@ const reviewRouter = require('./routes/reviewRoutes');
 const viewRouter = require('./routes/viewRoutes');
 const bookingRouter = require('./routes/bookingRoutes');
 const bookingController = require('./controllers/bookingController');
-const authController = require('./controllers/authController');
+
 // Starts Express app
 const app = express();
 
