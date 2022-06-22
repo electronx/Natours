@@ -298,6 +298,14 @@ body {
   outline-offset: 3px;
 }
 
+#lostqr {
+  margin-left: 10px;
+}
+
+#qr-code {
+  display: block;
+  margin-left: 100px;
+}
 .header {
   background-color: #444;
   padding: 0 5rem;

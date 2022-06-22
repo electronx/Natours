@@ -21,18 +21,18 @@ module.exports = class Email {
         host: 'smtp.elasticemail.com',
         port: 587,
         auth: {
-          user: 'thescapist92@gmail.com',
+          user: process.env.ELASTICMAIL_USERNAME,
           pass: process.env.ELASTICMAIL,
         },
       });
     }
-    // Using Nodmailer to catch emails
+    // Using Nodmailer to catch emails (using mailtrap to fake SMTP server and test the email service)
     return nodemailer.createTransport({
-      host: 'smtp.mailtrap.io',
-      port: 2525,
+      host: process.env.EMAIL_HOST,
+      port: process.env.EMAIL_PORT,
       auth: {
-        user: 'ae006996f50787',
-        pass: 'b576d277fd4b6a',
+        user: process.env.EMAIL_USERNAME,
+        pass: process.env.EMAIL_PASSWORD,
       },
     });
   }

@@ -26,6 +26,7 @@ const app = express();
 
 app.enable('trust proxy');
 
+// Set view engine and folder for Views
 app.set('view engine', 'pug');
 app.set('views', path.join(__dirname, 'views'));
 
